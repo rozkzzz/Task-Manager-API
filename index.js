@@ -2,26 +2,29 @@ const express = require('express');
 const app  = express();
 const port = 3000;
 
+const taskRoutes = require('./routes/taskRoutes');
+const taskStore = require('./data/taskStore');
+const tasks = taskStore.tasks;
+
+
 app.use(express.json());
-let tasks = [{
-            id:1,
-            title:'เรียน Express',
-            completed:false
-            },{
-            id:2,
-            title:'เรียน pressEx',
-            completed:true
-            }];
+app.use('/tasks',taskRoutes);
+
 
 app.get('/', function(req,res){
     res.send('Task Manager API is running');
 });
 
-app.get('/tasks',function(req,res){
-    res.json(tasks);
-});
-
-let nextTaskId = tasks.length+1;
+let nextTaskId;
+if (tasks.length === 0)
+   nextTaskId = 1;
+else{
+    let temp = tasks.map(function(task){
+        return task.id;
+    })    
+    nextTaskId = Math.max(...temp)+1;
+}
+    
 
 app.post('/tasks',function(req,res){
     if(typeof req.body.title !== 'string' || (req.body.title).trim() ==='')
@@ -32,8 +35,9 @@ app.post('/tasks',function(req,res){
         title:title_trim,
         completed:false,
     }
-    nextTaskId++;
     tasks.push(newTask);
+    nextTaskId++;
+    taskStore.saveTasks();
     return res.status(201).json(newTask);
 });
 
@@ -60,6 +64,7 @@ app.patch('/tasks/:id',function(req,res){
     if (typeof req.body.completed !== 'boolean')
         return res.status(400).json({message:'Completed must be a boolean'});
     task.completed = req.body.completed;
+    taskStore.saveTasks();
     return res.json(task);
 });
 
@@ -73,9 +78,11 @@ app.delete('/tasks/:id',function(req,res){
     if(task === -1)
         return res.status(404).json({message:'Task not found'});
     let deletedTask = tasks.splice(task,1)[0];
+    taskStore.saveTasks();
     return res.json(deletedTask);
 
 });
+
 app.listen(port,function(){
     console.log('server is on');
 });
