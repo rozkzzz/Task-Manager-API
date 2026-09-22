@@ -15,43 +15,7 @@ app.get('/', function(req,res){
     res.send('Task Manager API is running');
 });
 
-let nextTaskId;
-if (tasks.length === 0)
-   nextTaskId = 1;
-else{
-    let temp = tasks.map(function(task){
-        return task.id;
-    })    
-    nextTaskId = Math.max(...temp)+1;
-}
-    
 
-app.post('/tasks',function(req,res){
-    if(typeof req.body.title !== 'string' || (req.body.title).trim() ==='')
-        return res.status(400).json({message:'Title is required'});
-    let title_trim = (req.body.title).trim();
-    let newTask ={
-        id:nextTaskId,
-        title:title_trim,
-        completed:false,
-    }
-    tasks.push(newTask);
-    nextTaskId++;
-    taskStore.saveTasks();
-    return res.status(201).json(newTask);
-});
-
-app.get('/tasks/:id',function(req,res){
-    let taskId = Number(req.params.id);
-    if (Number.isNaN(taskId))
-        return res.status(400).json({message:'ID must be a number'});
-    let task = tasks.find(function(oneTask){
-            return oneTask.id === taskId;
-    });
-    if(task === undefined)
-        return res.status(404).json({message:'Task not found'});
-    return res.json(task);
-});
 
 app.patch('/tasks/:id',function(req,res){
     let taskId = Number(req.params.id);

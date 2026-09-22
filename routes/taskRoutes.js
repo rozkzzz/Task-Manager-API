@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const taskStore = require('../data/taskStore');
+const taskController = require('../controllers/taskController');
 
-router.get('/',function(req,res){
-    res.json(taskStore.tasks);
-});
-
-
+router.get('/', taskController.getTasks);
+router.get('/:id',taskController.getTaskById);
+router.post('/', taskController.createTask);
 
 module.exports = router;

@@ -14,7 +14,18 @@ function saveTasks(){
     fs.writeFileSync("tasks.json", jsonData, 'utf-8');
 }
 
+let nextTaskId;
+function getNextTaskId(){
+    if (tasks.length === 0)
+        return 1;
+    let temp = tasks.map(function(task){
+        return task.id;
+    })    
+    return Math.max(...temp)+1;
+    }
+
 module.exports = {
     tasks: tasks,
-    saveTasks:saveTasks
+    saveTasks:saveTasks,
+    getNextTaskId:getNextTaskId
 }
