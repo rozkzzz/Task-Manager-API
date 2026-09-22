@@ -24,8 +24,15 @@ function getNextTaskId(){
     return Math.max(...temp)+1;
     }
 
+function getAllTasks() {
+    return tasks;
+}
+
+
+
 module.exports = {
     tasks: tasks,
     saveTasks:saveTasks,
-    getNextTaskId:getNextTaskId
+    getNextTaskId:getNextTaskId,
+    getAllTasks:getAllTasks
 }
