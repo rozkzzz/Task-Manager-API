@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 
 let tasks = []
 try {
@@ -9,12 +9,30 @@ try {
     throw err;
 }
 
-function saveTasks(){
+async function saveTasks() {
     const jsonData = JSON.stringify(tasks, null, 2);
-    fs.writeFileSync("tasks.json", jsonData, 'utf-8');
+
+    await fs.promises.writeFile(
+        "tasks.json",
+        jsonData,
+        "utf-8"
+    );
 }
 
-let nextTaskId;
+async function createTask(title) {
+    let newTask = {
+        id: getNextTaskId(),
+        title: title,
+        completed: false
+    };
+
+    tasks.push(newTask);
+
+    await saveTasks();
+
+    return newTask;
+}
+
 function getNextTaskId(){
     if (tasks.length === 0)
         return 1;
@@ -28,11 +46,41 @@ function getAllTasks() {
     return tasks;
 }
 
+function getTaskById(id) {
+    return tasks.find(function(task) {
+        return task.id === id;
+    });
+}
+function updateTask(id, completed) {
+    let task = getTaskById(id);
 
+    if (task === undefined)
+        return undefined;
+
+    task.completed = completed;
+    saveTasks();
+
+    return task;
+}
+function deleteTask(id) {
+    let taskIndex = tasks.findIndex(function(task) {
+        return task.id === id;
+    });
+
+    if (taskIndex === -1)
+        return undefined;
+
+    let deletedTask = tasks.splice(taskIndex, 1)[0];
+
+    saveTasks();
+
+    return deletedTask;
+}
 
 module.exports = {
-    tasks: tasks,
-    saveTasks:saveTasks,
-    getNextTaskId:getNextTaskId,
-    getAllTasks:getAllTasks
+    getAllTasks:getAllTasks,
+    getTaskById:getTaskById,
+    createTask:createTask,
+    updateTask:updateTask,
+    deleteTask:deleteTask
 }
