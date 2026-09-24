@@ -1,13 +1,25 @@
-const fs = require('fs').promises;
+const fs = require('fs');
+const mysql = require('mysql2/promise');
 
-let tasks = []
-try {
-    const data = fs.readFileSync('tasks.json', { encoding: 'utf8', flag: 'r' });
-    tasks = JSON.parse(data);
-} catch (err) {
-    console.error('Error reading tasks.json:', err);
-    throw err;
+let con;
+
+async function toDatabase() {
+    try {
+        con = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: '1234',
+            database: 'task_manager'
+        });
+
+        console.log('Connected to MySQL Database!');
+    } catch (err) {
+        console.error('Database connection error:', err);
+        throw err;
+    }
 }
+
+toDatabase();
 
 async function saveTasks() {
     const jsonData = JSON.stringify(tasks, null, 2);
@@ -42,8 +54,9 @@ function getNextTaskId(){
     return Math.max(...temp)+1;
     }
 
-function getAllTasks() {
-    return tasks;
+async function getAllTasks() {
+    const [rows] = await con.query('SELECT * from tasks');
+    return rows;
 }
 
 function getTaskById(id) {
@@ -51,18 +64,18 @@ function getTaskById(id) {
         return task.id === id;
     });
 }
-function updateTask(id, completed) {
+async function updateTask(id, completed) {
     let task = getTaskById(id);
 
     if (task === undefined)
         return undefined;
 
     task.completed = completed;
-    saveTasks();
+    await saveTasks();
 
     return task;
 }
-function deleteTask(id) {
+async function deleteTask(id) {
     let taskIndex = tasks.findIndex(function(task) {
         return task.id === id;
     });
@@ -72,7 +85,7 @@ function deleteTask(id) {
 
     let deletedTask = tasks.splice(taskIndex, 1)[0];
 
-    saveTasks();
+    await saveTasks();
 
     return deletedTask;
 }

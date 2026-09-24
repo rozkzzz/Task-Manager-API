@@ -1,7 +1,8 @@
 const taskStore = require('../data/taskStore');
 
-function getTasks(req, res) {
-    return res.json(taskStore.getAllTasks());
+async function getTasks(req, res) {
+    let tasks = await taskStore.getAllTasks();
+    return res.json(tasks);
 }
 
 function getTaskById(req, res) {
@@ -39,7 +40,7 @@ async function createTask(req, res) {
     return res.status(201).json(newTask);
 }
 
-function updateTask(req, res) {
+async function updateTask(req, res) {
     let taskId = Number(req.params.id);
 
     if (Number.isNaN(taskId))
@@ -52,9 +53,9 @@ function updateTask(req, res) {
             message: 'Completed must be a boolean'
         });
 
-    let task = taskStore.updateTask(
-        taskId,
-        req.body.completed
+    let task = await taskStore.updateTask(
+    taskId,
+    req.body.completed
     );
 
     if (task === undefined)
@@ -65,7 +66,7 @@ function updateTask(req, res) {
     return res.json(task);
 }
 
-function deleteTask(req, res) {
+async function deleteTask(req, res) {
     let taskId = Number(req.params.id);
 
     if (Number.isNaN(taskId))
@@ -73,7 +74,7 @@ function deleteTask(req, res) {
             message: 'ID must be a number'
         });
 
-    let deletedTask = taskStore.deleteTask(taskId);
+    let deletedTask = await taskStore.deleteTask(taskId);
 
     if (deletedTask === undefined)
         return res.status(404).json({
