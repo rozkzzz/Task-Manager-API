@@ -5,7 +5,7 @@ async function getTasks(req, res) {
     return res.json(tasks);
 }
 
-function getTaskById(req, res) {
+async function getTaskById(req, res) {
     let taskId = Number(req.params.id);
 
     if (Number.isNaN(taskId))
@@ -13,7 +13,7 @@ function getTaskById(req, res) {
             message: 'ID must be a number'
         });
 
-    let task = taskStore.getTaskById(taskId);
+    let task = await taskStore.getTaskById(taskId);
 
     if (task === undefined)
         return res.status(404).json({

@@ -32,17 +32,10 @@ async function saveTasks() {
 }
 
 async function createTask(title) {
-    let newTask = {
-        id: getNextTaskId(),
-        title: title,
-        completed: false
-    };
 
-    tasks.push(newTask);
-
-    await saveTasks();
-
-    return newTask;
+    let [task] = await con.query('insert into tasks (title) values(?)',[title]);
+    let [rows] = await con.query('SELECT * from tasks where id = ?',[task.insertId]);
+    return rows[0];
 }
 
 function getNextTaskId(){
@@ -59,22 +52,22 @@ async function getAllTasks() {
     return rows;
 }
 
-function getTaskById(id) {
-    return tasks.find(function(task) {
-        return task.id === id;
-    });
+async function getTaskById(id) {
+    const [rows] = await con.query('SELECT * from tasks where id = ?',[id]);
+    return rows[0];
 }
+
 async function updateTask(id, completed) {
     let task = getTaskById(id);
 
     if (task === undefined)
         return undefined;
 
-    task.completed = completed;
-    await saveTasks();
+    let taskUpdate = await con.query('');
 
     return task;
 }
+
 async function deleteTask(id) {
     let taskIndex = tasks.findIndex(function(task) {
         return task.id === id;
