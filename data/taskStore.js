@@ -1,4 +1,4 @@
-const fs = require('fs');
+
 const mysql = require('mysql2/promise');
 
 let con;
@@ -21,15 +21,6 @@ async function toDatabase() {
 
 toDatabase();
 
-async function saveTasks() {
-    const jsonData = JSON.stringify(tasks, null, 2);
-
-    await fs.promises.writeFile(
-        "tasks.json",
-        jsonData,
-        "utf-8"
-    );
-}
 
 async function createTask(title) {
 
@@ -37,15 +28,6 @@ async function createTask(title) {
     let [rows] = await con.query('SELECT * from tasks where id = ?',[task.insertId]);
     return rows[0];
 }
-
-function getNextTaskId(){
-    if (tasks.length === 0)
-        return 1;
-    let temp = tasks.map(function(task){
-        return task.id;
-    })    
-    return Math.max(...temp)+1;
-    }
 
 async function getAllTasks() {
     const [rows] = await con.query('SELECT * from tasks');
@@ -58,29 +40,21 @@ async function getTaskById(id) {
 }
 
 async function updateTask(id, completed) {
-    let task = getTaskById(id);
+    let task = await getTaskById(id);
 
     if (task === undefined)
         return undefined;
 
-    let taskUpdate = await con.query('');
+    let taskUpdate = await con.query('UPDATE tasks SET completed = ? WHERE id = ?',[completed,id]);
 
-    return task;
+    return await getTaskById(id);
 }
 
 async function deleteTask(id) {
-    let taskIndex = tasks.findIndex(function(task) {
-        return task.id === id;
-    });
+    let temp = await getTaskById(id);
+    let taskDelete = await con.query('DELETE FROM tasks WHERE id = ?',[id]);
 
-    if (taskIndex === -1)
-        return undefined;
-
-    let deletedTask = tasks.splice(taskIndex, 1)[0];
-
-    await saveTasks();
-
-    return deletedTask;
+    return temp;
 }
 
 module.exports = {
